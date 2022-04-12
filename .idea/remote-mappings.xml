@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteMappingsManager">
+    <list>
+      <list>
+        <remote-mappings server-id="python@docker-compose://[F:\Documents\1171584-ISEP\MEIA\Ano 1\Semestre 2\Challenge 3\equipa7-challenge3-meia-2122\docker-compose.yml]:data_acquisition/python">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$/data_acquisition" remote-root="/code" />
+            </list>
+          </settings>
+        </remote-mappings>
+      </list>
+    </list>
+  </component>
+</project>

@@ -2,44 +2,54 @@ version: "3.1"
 services:
   data_acquisition:
     build: ./data_acquisition
+    environment:
+      - BEARER_TOKEN="${BEARER_TOKEN}"
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - backend
 
-  data_processing:
-    image: python:alpine3.15
-    build: ./data_processing
-    depends_on:
-      database:
-        condition: service_healthy
-
-  data_visualization:
-    image: python:alpine3.15
-    build: ./data_visualization
-    depends_on:
-      database:
-        condition: service_healthy
-
-  sentiment_analysis_nn:
-    image: python:alpine3.15
-    build: ./sentiment_analysis_nn
-    depends_on:
-      database:
-        condition: service_healthy
-
-  sentiment_analysis_nn_pretrained:
-    image: python:alpine3.15
-    build: ./sentiment_analysis_nn_pretrained
-    depends_on:
-      database:
-        condition: service_healthy
-
-  sentiment_analysis_vader:
-    image: python:alpine3.15
-    build: ./sentiment_analysis_vader
-    depends_on:
-      database:
-        condition: service_healthy
+#  data_processing:
+#    build: ./data_processing
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    networks:
+#      - backend
+#
+#  data_visualization:
+#    build: ./data_visualization
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    networks:
+#      - frontend
+#      - backend
+#
+#  sentiment_analysis_nn:
+#    build: ./sentiment_analysis_nn
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    networks:
+#      - backend
+#
+#  sentiment_analysis_nn_pretrained:
+#    build: ./sentiment_analysis_nn_pretrained
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    networks:
+#      - backend
+#
+#  sentiment_analysis_vader:
+#    build: ./sentiment_analysis_vader
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    networks:
+#      - backend
 
   database:
     image: mongo
@@ -53,6 +63,8 @@ services:
       retries: 5
       interval: 15s
       start_period: 30s
+    networks:
+      - backend
 
   database_ui:
     image: mongo-express
@@ -65,3 +77,12 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - backend
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
