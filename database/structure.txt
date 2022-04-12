@@ -1,0 +1,20 @@
+Table RAW_DATA
+{
+	"id": hash for social media post
+	"text": string containing social media post,
+	"date": publication date for social media post
+}
+
+Table PROCESSED_DATA
+{
+	"post_id": hash for social media post
+	"sentence_id": hash for sentence
+	"text": tokenized sentence,
+	"features": list of detected features in sentence
+}
+
+TABLE RESULTS
+{
+	"sentence_id": hash for sentence,
+	"sentiment": value for sentiment [1..5]
+}

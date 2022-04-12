@@ -1,0 +1,67 @@
+version: "3.1"
+services:
+  data_acquisition:
+    build: ./data_acquisition
+    depends_on:
+      database:
+        condition: service_healthy
+
+  data_processing:
+    image: python:alpine3.15
+    build: ./data_processing
+    depends_on:
+      database:
+        condition: service_healthy
+
+  data_visualization:
+    image: python:alpine3.15
+    build: ./data_visualization
+    depends_on:
+      database:
+        condition: service_healthy
+
+  sentiment_analysis_nn:
+    image: python:alpine3.15
+    build: ./sentiment_analysis_nn
+    depends_on:
+      database:
+        condition: service_healthy
+
+  sentiment_analysis_nn_pretrained:
+    image: python:alpine3.15
+    build: ./sentiment_analysis_nn_pretrained
+    depends_on:
+      database:
+        condition: service_healthy
+
+  sentiment_analysis_vader:
+    image: python:alpine3.15
+    build: ./sentiment_analysis_vader
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    expose: 
+      - 27017
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      retries: 5
+      interval: 15s
+      start_period: 30s
+
+  database_ui:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_SERVER: database
+    depends_on:
+      database:
+        condition: service_healthy
