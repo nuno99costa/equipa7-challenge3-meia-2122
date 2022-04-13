@@ -1,4 +1,3 @@
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.sentiment.util import * 
 from textblob import TextBlob 
 from nltk import tokenize 

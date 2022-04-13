@@ -1,9 +1,11 @@
-FROM python:alpine3.15
+FROM python:3.9-buster
 
 WORKDIR /code
 
 COPY . .
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-CMD [ "python", "main.py" ]
+RUN pip install textblob && \
+    pip install pandas
+
+CMD [ "python", "TextBlobSentiment.py" ]
