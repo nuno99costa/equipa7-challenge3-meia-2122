@@ -10,13 +10,13 @@ services:
     networks:
       - backend
 
-#  data_processing:
-#    build: ./data_processing
-#    depends_on:
-#      database:
-#        condition: service_healthy
-#    networks:
-#      - backend
+  data_processing:
+    build: ./data_processing
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - backend
 #
 #  data_visualization:
 #    build: ./data_visualization

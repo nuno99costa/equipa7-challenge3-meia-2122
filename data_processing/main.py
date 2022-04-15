@@ -1,75 +1,95 @@
-import pandas as pd
+from string import punctuation
+from pymongo import MongoClient
 import hashlib
 import nltk
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
-import pickle
+#from sklearn.feature_extraction.text import TfidfVectorizer
 import re
 
-word_pattern = re.compile('^[a-z]')
+# connect to the database
+def load_db():
+    client = MongoClient('database',
+                         username='root',
+                         password='root')
+    db = client.data
+    return db
 
-def is_word(s):
-    return word_pattern.match(s)
+def populate_db(data, collection):
+    for o in data:
+        collection.insert_one({
+            '_id': o['_id'],
+            'post_id': o['post_id'],
+            'text': o['text'],
+            'features': o['features']
+        })
 
-with open('Emoticon_Dict.p', 'rb') as fp:
-    Emoticon_Dict = pickle.load(fp)
 
-emoticon_pattern = re.compile(
-    u'(' + u'|'.join(k for k in Emoticon_Dict) + u')')
-
-# Stop words
 nltk.download('stopwords')
-stop_words = stopwords.words('english')
+nltk.download('punkt')
 
-# texts
+def main():
+    # Stop words
+    stop_words = stopwords.words('english')
 
-text = "Great movie. =P Would love to watch spiderman again! :))) 😀 \U0001F600"
-text.encode('unicode-escape')
-#text = text.casefold()
+    db = load_db()
+    raw_data = db.RAW_DATA
 
-# Tokenize texts
-#tokenizer = nltk.tokenize.TreebankWordTokenizer()
-tokenizer = nltk.tokenize.TweetTokenizer(
-    preserve_case=False, reduce_len=True, strip_handles=True, match_phone_numbers=False)
-stemmer = nltk.stem.PorterStemmer()
-#lemmer = nltk.stem.WordNetLemmatizer()
+    # Tokenize texts
+    tokenizer = nltk.tokenize.TweetTokenizer(
+        preserve_case=False, reduce_len=True, strip_handles=True, match_phone_numbers=False)
+    stemmer = nltk.stem.PorterStemmer()
+    #lemmer = nltk.stem.WordNetLemmatizer()
 
-sentences = nltk.tokenize.sent_tokenize(text, language='english')
 
-tokenized_sentences = [tokenizer.tokenize(t) for t in sentences]
-tokenized_sentences.reverse()
-for i, sentence in enumerate(tokenized_sentences):
+    processed_data = []
+    for tweet in raw_data.find():
+        text = tweet['text']
 
-    # Checks if it is last sentence
-    if i < len(tokenized_sentences)-1:
-        j = 0
-        # Adds emojis/emoticons to previous sentence
-        for token in sentence:
-            if is_word(token):
-                break
-            else:
-                j += 1
+        #Remove links
+        text = re.sub(r'http\S+', '', text)
 
-        tokenized_sentences[i+1].extend(sentence[0:j])
-        sentence = sentence[j:]
+        #Seperate sentences
+        sentences = nltk.tokenize.sent_tokenize(text, language='english')
 
-    #Check is sentence is empty
-    if not sentence:
-        continue
+        for sentence in sentences:
+            print('NEW SENTENCE:\n\t', sentence)
 
-    # Remove stop words
-    filtered_sentence = [w for w in sentence if not w in stop_words]
+            #Tokenize sentence            
+            tokenized_sentence = tokenizer.tokenize(sentence)
 
-    # Stem words
-    stemmed_sentence = [stemmer.stem(token) for token in filtered_sentence]
+            #Remove # 
+            for token in tokenized_sentence:
+                if token.startswith('#'):
+                    token = token[1:]
+                    
+            filtered_sentence = [w[1:] for w in tokenized_sentence if token.startswith('#') else w]
 
-    # Rewrite new string
-    sentence = ' '.join(stemmed_sentence)
+            # Remove stop words
+            filtered_sentence = [w for w in tokenized_sentence if not w in stop_words]
 
-    # Generate unique hash
-    id = int(hashlib.md5(sentence.encode('utf-8')).hexdigest(), 16)
+            filtered_sentence = [w for w in tokenized_sentence if not w in punctuation]
 
-    print(sentence)
+            #Check is sentence is empty
+            if not filtered_sentence:
+                continue
 
-#tdidf = TfidfVectorizer(min_df=2, max_df=.9, ngram_range=(1, 2))
-#features = tdidf.fit_transform(texts)
+            # Stem words
+            stemmed_sentence = [stemmer.stem(token) for token in filtered_sentence]
+
+            # Rewrite new string
+            sentence = ' '.join(stemmed_sentence)
+
+            # Generate unique hash
+            id = hashlib.md5(sentence.encode('unicode-escape')).hexdigest()
+
+            o = {'post_id':tweet['_id'], '_id': id, 'text': stemmed_sentence, 'features': []}
+            print('\t',o)
+            processed_data.append(o)
+
+    populate_db(processed_data, db.PROCESSED_DATA)
+
+    #tdidf = TfidfVectorizer(min_df=2, max_df=.9, ngram_range=(1, 2))
+    #features = tdidf.fit_transform(texts)
+
+if __name__ == "__main__":
+    main()
