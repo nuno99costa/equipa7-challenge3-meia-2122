@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.9"
 services:
   data_acquisition:
     build: ./data_acquisition
@@ -56,13 +56,16 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
-    expose: 
-      - 27017
+    ports:
+      - 27017:27017
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
       retries: 5
       interval: 15s
       start_period: 30s
+    volumes:
+      - db-data:/data/db
+      - db-config:/data/configdb
     networks:
       - backend
 
@@ -81,8 +84,30 @@ services:
       - backend
       - frontend
 
+  metabase:
+    image: metabase/metabase:latest
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      JAVA_TIMEZONE: Europe/Lisbon
+      MB_DB_FILE: /metabase-data/metabase.db
+    volumes:
+      - mb-data:/metabase-data
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      database:
+        condition: service_healthy
+
 networks:
   frontend:
     driver: bridge
   backend:
     driver: bridge
+
+volumes:
+  db-data: {}
+  db-config: {}
+  mb-data: {}
