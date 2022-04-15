@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+import pymongo
 import hashlib
 import nltk
 from nltk.corpus import stopwords
@@ -9,7 +9,7 @@ import pandas as pd
 
 # connect to the database
 def load_db():
-    client = MongoClient('database',
+    client = pymongo.MongoClient('database',
                          username='root',
                          password='root')
     db = client.data
@@ -17,16 +17,21 @@ def load_db():
 
 def populate_db(data, collection):
     for o in data:
-        collection.insert_one({
-            '_id': o['_id'],
-            'post_id': o['post_id'],
-            'text': o['text'],
-            'features': o['features']
-        })
+        try:
+            collection.insert_one({
+                '_id': o['_id'],
+                'post_id': o['post_id'],
+                'text': o['text'],
+                'features': o['features']
+            })
+        except pymongo.errors.DuplicateKeyError:
+            print('Duplicate:', o['text'])
 
 nltk.download('stopwords')
 nltk.download('punkt')
 nltk.download('wordnet')
+
+emojis_pattern = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
 
 def main():
     db = load_db()
@@ -46,9 +51,13 @@ def main():
         texts.append(tweet['text']) """
 
     processed_data = []
+
+    emojis_backlog = []
     
     for tweet in data:
         text = tweet['text']
+
+        text.encode('unicode-escape')
 
         # remove stock market tickers like $GE
         text = re.sub(r'\$\w*', '', text)
@@ -61,9 +70,17 @@ def main():
 
         #Seperate sentences
         sentences = nltk.tokenize.sent_tokenize(text, language='english')
+
+        sentences.reverse()
         
         for sentence in sentences:
-            
+            #Emojis
+            emojis = emojis_pattern.findall(sentence)
+            emojis.extend(emojis_backlog)
+            emojis_backlog = []
+
+            sentence = emojis_pattern.sub('', sentence)
+
             tokenized_sentence = []
             #Tokenize sentence            
             tokenized_sentence = tokenizer.tokenize(sentence)
@@ -76,17 +93,20 @@ def main():
 
             # Remove numbers
             filtered_sentence = [w for w in filtered_sentence if not re.match(r'^([,.\d]*)([,.]?\d*)$', w)]
-
+            
             # Remove punctuation
             filtered_sentence = [w for w in filtered_sentence if not re.match(r'[^\w\s]', w)]
 
             #Check is sentence is empty
             if not filtered_sentence:
+                emojis_backlog = emojis
                 continue
 
             # Stem words
             #stemmed_sentence = [stemmer.stem(token) for token in filtered_sentence]
             final_sentence = [lemmer.lemmatize(token) for token in filtered_sentence]
+
+            final_sentence.extend(emojis)
 
             # Rewrite new string
             sentence = ' '.join(final_sentence)
@@ -98,9 +118,7 @@ def main():
 
             o = {'post_id':tweet['_id'], '_id': id, 'text': final_sentence, 'features': []}
             #texts.append(sentence)
-            
-            #print('\t',o)
-            
+                        
             processed_data.append(o)
     
     populate_db(processed_data, db.PROCESSED_DATA)
