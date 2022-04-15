@@ -5,7 +5,8 @@ import json
 
 bearer_token = os.environ.get("BEARER_TOKEN")
 search_url = "https://api.twitter.com/2/tweets/search/recent"
-query_params = {'query': '(-is:retweet lang:en is:verified) ("iPhone 13 Pro" OR #iPhone13Pro)', 'max_results': 100, 'tweet.fields': 'created_at'}
+query_params = {'query': '(-is:retweet lang:en is:verified) ("iPhone 13 Pro" OR #iPhone13Pro)', 'max_results': 100,
+                'tweet.fields': 'created_at'}
 
 
 # connect to the database

@@ -7,14 +7,16 @@ Table RAW_DATA
 
 Table PROCESSED_DATA
 {
+	"_id": hash for sentence
 	"post_id": hash for social media post
-	"sentence_id": hash for sentence
 	"text": tokenized sentence,
 	"features": list of detected features in sentence
 }
 
 TABLE RESULTS
 {
-	"sentence_id": hash for sentence,
-	"sentiment": value for sentiment [1..5]
+	"_id": hash for sentence,
+	"sentiment_nn": value for sentiment [1..5]
+	"sentiment_textblob": value for sentiment [1..5]
+	"sentiment_vader": value for sentiment [1..5]
 }
