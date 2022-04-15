@@ -4,15 +4,15 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 
 # Read in data
-colnames=['target', 'id', 'date', 'flag', 'user', 'text', "vader"] 
+colnames=['target', 'id', 'date', 'flag', 'user', 'text'] 
 #colnames1=['id', 'entity', 'sentiment', 'text', "vader"] 
-df=pd.read_csv('data/training.1600000.processed.noemoticon.csv', names=colnames, encoding='latin-1', lineterminator='\n')
-#df1=pd.read_csv('data/training.1600000.processed.noemoticon.csv', names=colnames1, encoding='latin-1', lineterminator='\n')
+df=pd.read_csv('data/training.1600000.processed.noemoticon.csv', names=colnames, encoding='ISO-8859-1')
+#df1=pd.read_csv('data/training.1600000.processed.noemoticon.csv', names=colnames1, encoding='ISO-8859-1', lineterminator='\n')
 
 # Calculate polarity score using Vader
 def get_vader_score(sentence): 
     compound=sid_obj.polarity_scores(sentence)['compound']
-    if compound > 0: 
+    if compound >= 0: 
         return 4
     #elif (compound >= -0.1) and (compound <=0.1): 
     #    return 2
