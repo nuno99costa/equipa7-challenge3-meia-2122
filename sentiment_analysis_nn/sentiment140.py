@@ -22,14 +22,10 @@ df.drop_duplicates(subset ='text', keep = 'first', inplace = True)
 texts = df.text.to_list()
 targets = df.target.to_list()
 
-processed_texts = []
-for text, target in texts, targets:
-    processed_texts.extend(process_tweet(text))
+l = len(texts)*.8
 
-l = len(processed_texts)*.8
-
-train_dataset = processed_texts[:l]
-test_dataset = processed_texts[l:]
+train_dataset = texts[:l]
+test_dataset = texts[l:]
 
 # Build the vocabulary 
 vocab = DNN.build_vocabulary(dataset=train_dataset)
