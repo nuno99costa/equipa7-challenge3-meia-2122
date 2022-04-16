@@ -19,14 +19,14 @@ services:
     build: ./sentiment_analysis_nn_pretrained
     networks:
       - backend
-#
-#  sentiment_analysis_vader:
-#    build: ./sentiment_analysis_vader
-#    depends_on:
-#      database:
-#        condition: service_healthy
-#    networks:
-#      - backend
+
+  sentiment_analysis_vader:
+    build: ./sentiment_analysis_vader
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - backend
 
   database:
     image: mongo
