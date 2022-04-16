@@ -9,8 +9,10 @@ from fastapi import FastAPI
 import re
 import pandas as pd
 
-app = FastAPI()
+KEYWORD_CUT_OFF = 10
+TYPO_CUT_OFF = 3
 
+app = FastAPI()
 
 # connect to the database
 def load_db():
@@ -54,11 +56,9 @@ def process_workflow():
     # stemmer = nltk.stem.PorterStemmer()
     lemmer = nltk.stem.WordNetLemmatizer()
 
-    """ texts = []
-    for tweet in data:
-        texts.append(tweet['text']) """
+    texts = []
 
-    processed_data = []
+    preprocessed_data = []
 
     emojis_backlog = []
 
@@ -116,30 +116,47 @@ def process_workflow():
 
             final_sentence.extend(emojis)
 
-            # Rewrite new string
-            sentence = ' '.join(final_sentence)
+            o = {'post_id': tweet['_id'], 'text': final_sentence, 'features': []}
+            texts.append(sentence)
 
-            # Generate unique hash
-            id = hashlib.md5(sentence.encode('unicode-escape')).hexdigest()
+            preprocessed_data.append(o)
 
-            print(sentence)
-
-            o = {'post_id': tweet['_id'], '_id': id, 'text': final_sentence, 'features': []}
-            # texts.append(sentence)
-
-            processed_data.append(o)
-
-    populate_db(processed_data, db.PROCESSED_DATA)
-
-    """ vectorizer = TfidfVectorizer(min_df=4, max_df=.7, ngram_range=(1,2))
-
+    vectorizer = TfidfVectorizer(min_df=TYPO_CUT_OFF, max_df=.9, ngram_range=(1,2))
     features = vectorizer.fit_transform(texts)
 
-    print(vectorizer.get_stop_words())
+    df = pd.DataFrame(features.todense(),columns=vectorizer.get_feature_names())
 
-    df = pd.DataFrame(features.todense(), columns=vectorizer.get_feature_names_out()) """
-    # df.to_csv('a.csv')
+    keywords = df.columns.to_list()[:KEYWORD_CUT_OFF]
 
+    print('Keywords:', keywords)
+
+    typos = [t for t in vectorizer.stop_words_ if len(t.split(' ')) == 1 ]
+
+    print('Typos:', typos)
+
+    processed_data = []
+
+    for o in preprocessed_data:
+        text = [t for t in o['text'] if t not in typos]
+        if not text:
+            continue
+
+        found_keywords = [t for t in o['text'] if t in keywords]
+        o['text'] = text
+        o['features'] = list(dict.fromkeys(found_keywords))
+
+        # Rewrite new string
+        sentence = ' '.join(text)
+
+        #print(sentence)
+
+        # Generate unique hash
+        id = hashlib.md5(sentence.encode('unicode-escape')).hexdigest()
+        o['_id'] = id
+
+        processed_data.append(o)
+
+    populate_db(processed_data, db.PROCESSED_DATA)
 
 def request_sentiment_analysis():
     r = requests.get("http://sentiment_analysis_nn_pretrained/process_data")
