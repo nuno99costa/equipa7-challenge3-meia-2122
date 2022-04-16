@@ -12,34 +12,11 @@ services:
 
   data_processing:
     build: ./data_processing
-    depends_on:
-      database:
-        condition: service_healthy
     networks:
       - backend
-#
-#  data_visualization:
-#    build: ./data_visualization
-#    depends_on:
-#      database:
-#        condition: service_healthy
-#    networks:
-#      - frontend
-#      - backend
-#
-#  sentiment_analysis_nn:
-#    build: ./sentiment_analysis_nn
-#    depends_on:
-#      database:
-#        condition: service_healthy
-#    networks:
-#      - backend
-#
+
   sentiment_analysis_nn_pretrained:
     build: ./sentiment_analysis_nn_pretrained
-    depends_on:
-      database:
-        condition: service_healthy
     networks:
       - backend
 #
