@@ -3,7 +3,6 @@ import requests
 import hashlib
 import nltk
 from nltk.corpus import stopwords
-from regex import W
 from sklearn.feature_extraction.text import TfidfVectorizer
 from fastapi import FastAPI
 import re
@@ -89,7 +88,6 @@ def process_workflow():
 
             sentence = emojis_pattern.sub('', sentence)
 
-            tokenized_sentence = []
             # Tokenize sentence
             tokenized_sentence = tokenizer.tokenize(sentence)
 
@@ -124,7 +122,7 @@ def process_workflow():
     vectorizer = TfidfVectorizer(min_df=TYPO_CUT_OFF, max_df=.9, ngram_range=(1,2))
     features = vectorizer.fit_transform(texts)
 
-    df = pd.DataFrame(features.todense(),columns=vectorizer.get_feature_names())
+    df = pd.DataFrame(features.todense(), columns=vectorizer.get_feature_names())
 
     keywords = df.columns.to_list()[:KEYWORD_CUT_OFF]
 

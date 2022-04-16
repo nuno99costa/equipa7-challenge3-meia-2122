@@ -2,7 +2,7 @@ import os
 import random as rnd
 import re
 import string
-
+from process_text import process_text
 import subprocess
 import sys
 
@@ -45,34 +45,8 @@ class DNN:
         all_negative_tweets = twitter_samples.strings('negative_tweets.json')  
         return all_positive_tweets, all_negative_tweets
 
-
     def process_tweet(self, tweet):
-        '''
-        Input: 
-            tweet: a string containing a tweet
-        Output:
-            tweets_clean: a list of words containing the processed tweet
-        
-        '''
-        # remove stock market tickers like $GE
-        tweet = re.sub(r'\$\w*', '', tweet)
-        # remove old style retweet text "RT"
-        tweet = re.sub(r'^RT[\s]+', '', tweet)
-        # remove hyperlinks
-        tweet = re.sub(r'https?:\/\/.*[\r\n]*', '', tweet)
-        # remove hashtags
-        # only removing the hash # sign from the word
-        tweet = re.sub(r'#', '', tweet)
-        # tokenize tweets
-        tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
-        tweet_tokens = tokenizer.tokenize(tweet)
-        tweets_clean = []
-        for word in tweet_tokens:
-            if (word not in self.stopwords_english and # remove stopwords
-                word not in string.punctuation): #TODO should we keep the original punctuation?
-                stem_word = self.stemmer.stem(word)
-                tweets_clean.append(stem_word)
-        return tweets_clean
+        return process_text(tweet)
 
 
     def build_vocabulary(self, train_x):
@@ -80,10 +54,10 @@ class DNN:
 
         # Create vocabulary using words from training data
         for tweet in train_x: 
-            processed_tweet = DNN.process_tweet(tweet)
-            for word in processed_tweet:
-                if word not in vocab: 
-                    vocab[word] = len(vocab)
+            for sentence in self.process_tweet(tweet):
+                for word in sentence:
+                    if word not in vocab: 
+                        vocab[word] = len(vocab)
         
         return vocab
 
