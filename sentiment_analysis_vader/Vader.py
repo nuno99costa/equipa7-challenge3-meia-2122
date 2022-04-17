@@ -31,7 +31,7 @@ def sentiment_vader(sentence):
 def sentiment_vader_scale_amazon(sentence):
     sentence = sentence.rstrip()
     sentiment_dict = sid_obj.polarity_scores(sentence)
-    sentiment_dict['compound'] = (sentiment_dict['compound'] + 1) * 2.5
+    sentiment_dict['compound'] = (((sentiment_dict['compound'] +1) * (5 - 1)) / (1 + 1)) + 1
 
     if sentiment_dict['compound'] >= 4.5:
         overall_sentiment = "5"
