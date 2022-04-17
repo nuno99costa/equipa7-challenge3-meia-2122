@@ -2,6 +2,11 @@ import nltk
 from nltk.corpus import stopwords
 import re
 
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
 # Stop words
 stop_words = stopwords.words('english')
 
@@ -24,12 +29,12 @@ def process_text(text):
 
     # Remove links
     text = re.sub(r'http\S+', '', text)
-
+    
     # Seperate sentences
     sentences = nltk.tokenize.sent_tokenize(text, language='english')
 
     sentences.reverse()
-
+    final_sentence = []
     for sentence in sentences:
         # Emojis
         emojis = emojis_pattern.findall(sentence)
@@ -48,12 +53,12 @@ def process_text(text):
         filtered_sentence = [w for w in filtered_sentence if not re.match(r'^([,.\d]*)([,.]?\d*)$', w)]
 
         # Remove punctuation
-        filtered_sentence = [w for w in filtered_sentence if not re.match(r'[^\w\s]', w)]
+        #filtered_sentence = [w for w in filtered_sentence if not re.match(r'[^\w\s]', w)]
 
         # Stem words
-        final_sentence = [lemmer.lemmatize(token) for token in filtered_sentence]
+        final_sentence += [lemmer.lemmatize(token) for token in filtered_sentence]
 
         final_sentence.extend(emojis)
         
-        yield final_sentence
+    return final_sentence
 
