@@ -4,17 +4,19 @@ How to run:
         docker build --tag custom_dnn .
         docker run custom_dnn
 
-Missing Steps:
-    - Terminar de testar a Deep Neural Network
-    - Modificar o build vocabulary para ligar ao data processing em vez de utilizar o metodo "process_tweet"
-    - Guardar o modelo localmente para nao termos de estar sempre a treinar
-    - Analise de performance deste modelo vs outros modelos (vader e text_blob)
 '''
 
 from dnn import DNN
 import random as rnd
 
 dnn_obj = DNN()
+
+
+
+##################################################################################################
+# Creation of a new model
+##################################################################################################
+
 # Load positive and negative tweets to be used in the training and evaluation of the model
 all_positive_tweets, all_negative_tweets = dnn_obj.load_tweets_from_nltk()
 
@@ -27,12 +29,6 @@ val_neg   = all_negative_tweets[4000:] # generating validation set for negative 
 # Combine training data into one set
 train_dataset = train_pos + train_neg
 val_dataset  = val_pos + val_neg
-
-
-
-##################################################################################################
-# Creation of the model
-##################################################################################################
 
 # Build the vocabulary 
 vocab = dnn_obj.build_vocabulary(dataset=train_dataset)
@@ -83,9 +79,6 @@ accuracy = dnn_obj.test_model(dnn_obj.test_generator(batch_size=16, val_pos=val_
 
 print(f'The accuracy of your model on the validation set is {accuracy:.4f}', )
 
-#TODO Add method that saves the trained model in our computer
-#PATH = MY_PATH #TODO, example '/home/.../equipa7-(...)/checkpoints/model.pkl.gz'
-
 
 ##################################################################################################
 # Using the model for Sentiment Analysis
@@ -97,6 +90,8 @@ print(f'The accuracy of your model on the validation set is {accuracy:.4f}', )
 
 #Missing init, este init pode ser um modelo já guardado, ou o modelo que treinamos nas linhas anteriores 
 
-#TODO read file/database with sentences
-#sentence = "HEY, iphone 13 is great :)"
-#dnn_obj.predict(sentence=sentence, vocab=vocab, model=model)
+
+sentence = "HEY, iphone 13 is great :)"
+preds, sentiment = dnn_obj.predict(sentence=sentence, vocab=vocab, model=model)
+
+print(f"Phrase: {sentence}\n Sentiment: {sentiment}")

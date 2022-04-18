@@ -55,10 +55,9 @@ class DNN:
 
         # Create vocabulary using words from training data
         for tweet in dataset: 
-            for sentence in self.process_tweet(tweet):
-                for word in sentence:
-                    if word not in vocab: 
-                        vocab[word] = len(vocab)
+            for word in self.process_tweet(tweet):
+                if word not in vocab: 
+                    vocab[word] = len(vocab)
         
         return vocab
 
