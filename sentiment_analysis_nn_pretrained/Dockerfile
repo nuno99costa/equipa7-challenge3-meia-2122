@@ -6,6 +6,8 @@ COPY . .
 
 
 RUN pip install textblob && \
-    pip install pandas
+    pip install pandas &&\
+    pip install pymongo &&\
+    pip install fastapi[all]
 
-CMD [ "python", "TextBlobSentiment.py" ]
+CMD [ "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]

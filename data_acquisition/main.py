@@ -5,7 +5,8 @@ import json
 
 bearer_token = os.environ.get("BEARER_TOKEN")
 search_url = "https://api.twitter.com/2/tweets/search/recent"
-query_params = {'query': '(-is:retweet lang:en is:verified) ("iPhone 13 Pro" OR #iPhone13Pro)', 'max_results': 100, 'tweet.fields': 'created_at'}
+query_params = {'query': '(-is:retweet lang:en is:verified) ("iPhone 13 Pro" OR #iPhone13Pro)', 'max_results': 100,
+                'tweet.fields': 'created_at'}
 
 
 # connect to the database
@@ -36,11 +37,11 @@ def connect_to_endpoint(url, params):
 def populate_db(json_response, raw_data_collection):
     for tweet in json_response["data"]:
         print(tweet)
-        raw_data_collection.insert_one({
-            '_id': tweet["id"],
-            'date': tweet["created_at"],
-            'text': tweet["text"]
-        })
+        raw_data_collection.update_one({
+            '_id': tweet["id"]},
+            {"$set": {'date': tweet["created_at"],
+                      'text': tweet["text"]}},
+            upsert=True)
 
 
 def main():
@@ -52,3 +53,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    r = requests.get("http://data_processing/process_data")
+    print(r)
